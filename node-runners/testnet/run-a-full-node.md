@@ -67,10 +67,17 @@ echo "a48a5c2ba3f0d0ee077fc9a24514caaed3914e23e0de7b88163bb4d25e0866b8 $HOME/.se
 
 ### **Initialize Secret Enclave**
 
-Initialize `/opt/secret/.sgx_secrets`:
+Set environment variables:
 
 ```bash
-mkdir -p /opt/secret/.sgx_secrets
+export SCRT_ENCLAVE_DIR=/usr/lib
+export SCRT_SGX_STORAGE=/opt/secret/.sgx_secrets
+```
+
+Initialize `SCRT_ENCLAVE_DIR`:
+
+```bash
+mkdir -p $SCRT_ENCLAVE_DIR
 ```
 
 You can choose between two methods, **3a (automatic) or 3b (manual)**:
@@ -84,8 +91,6 @@ WARNING: This method is experimental, and may not work. If it doesn't work, skip
 The following commands will create the necessary environment variables and attempt to automatically register the node.
 
 ```bash
-export SCRT_ENCLAVE_DIR=/usr/lib
-export SCRT_SGX_STORAGE=/opt/secret/.sgx_secrets
 secretd auto-register --pulsar
 ```
 
@@ -102,13 +107,13 @@ secretd init-enclave
 Attestation certificate should have been created by the previous step
 
 ```bash
-ls -lh /opt/secret/.sgx_secrets/attestation_cert.der
+ls -lh $SCRT_SGX_STORAGE/attestation_cert.der
 ```
 
 Verify the certificate is valid. A 64 character registration key will be printed if it was successful.
 
 ```bash
-PUBLIC_KEY=$(secretd parse /opt/secret/.sgx_secrets/attestation_cert.der  2> /dev/null | cut -c 3-)
+PUBLIC_KEY=$(secretd parse $SCRT_SGX_STORAGE/attestation_cert.der  2> /dev/null | cut -c 3-)
 echo $PUBLIC_KEY
 ```
 
@@ -147,7 +152,7 @@ This will output your address, a 45 character-string starting with `secret1...`.
 1. Register your node on-chain
 
 ```bash
-secretd tx register auth /opt/secret/.sgx_secrets/attestation_cert.der -y --from <key-alias>
+secretd tx register auth $SCRT_SGX_STORAGE/attestation_cert.der -y --from <key-alias>
 ```
 
 2\. Pull & check your node's encrypted seed from the network
